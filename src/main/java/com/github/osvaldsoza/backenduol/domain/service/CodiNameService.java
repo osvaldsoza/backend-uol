@@ -25,7 +25,7 @@ import java.util.Objects;
 
 @Service
 @Getter
-public class CodiNomeService {
+public class CodiNameService {
 
     @Autowired
     private Environment env;

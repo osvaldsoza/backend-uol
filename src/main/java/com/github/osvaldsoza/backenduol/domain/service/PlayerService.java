@@ -1,46 +1,64 @@
 package com.github.osvaldsoza.backenduol.domain.service;
 
-import com.github.osvaldsoza.backenduol.domain.dto.CadastrarJogadorDTO;
+import com.github.osvaldsoza.backenduol.domain.dto.CreatePlayerDTO;
+import com.github.osvaldsoza.backenduol.domain.dto.ListPlayerDTO;
+import com.github.osvaldsoza.backenduol.domain.expetions.NoCodiNameAvailable;
 import com.github.osvaldsoza.backenduol.domain.model.GrupType;
 import com.github.osvaldsoza.backenduol.domain.model.Player;
-import com.github.osvaldsoza.backenduol.domain.repository.JogadorRepository;
+import com.github.osvaldsoza.backenduol.domain.repository.PlayerRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
-public class JogadorService {
+public class PlayerService {
 
     @Autowired
-    private Environment env;
-
-    @Autowired
-    private JogadorRepository jogadorRepository;
+    private PlayerRepository playerRepository;
 
     @Autowired
     private ModelMapper modelMapper;
 
     @Autowired
-    private CodiNomeService codiNomeService;
+    private CodiNameService codiNameService;
 
-
-    public Player cadastrar(CadastrarJogadorDTO jogadorDTO) {
+    public Player create(CreatePlayerDTO jogadorDTO) {
         Player player = modelMapper.map(jogadorDTO, Player.class);
-        player.setCodiNome(getCodiNome(player.getGrupType()));
-        return jogadorRepository.save(player);
+        player.setCodiName(getCodiNome(player.getGrupType()));
+        return playerRepository.save(player);
     }
 
-    private String getCodiNome(GrupType grupType){
-        String codiNome = "";
-        if(grupType == GrupType.VINGADORES){
-             codiNome = codiNomeService.getAverngersCodiNomesList().stream().findFirst().orElseThrow();
-            codiNomeService.getJusticeLeagueCodiNomesList().remove(codiNome);
+    public Page<ListPlayerDTO> list(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+
+        List<ListPlayerDTO> foo = playerRepository.findAll(pageable)
+                .stream()
+                .map(player -> modelMapper.map(player, ListPlayerDTO.class))
+                .collect(Collectors.toList());
+
+        return new PageImpl<>(foo, pageable, foo.size());
+    }
+
+    private String getCodiNome(GrupType grupType) {
+        if (grupType == GrupType.AVENGERS) {
+
+            if (codiNameService.getAverngersCodiNomesList().isEmpty()) {
+                throw new NoCodiNameAvailable("Codiname avengers no available.");
+            }
+            String firstCodiNome = codiNameService.getAverngersCodiNomesList().stream().findFirst().orElseThrow();
+            codiNameService.getAverngersCodiNomesList().remove(firstCodiNome);
+            return firstCodiNome;
         }
 
-        codiNome = codiNomeService.getJusticeLeagueCodiNomesList().stream().findFirst().orElseThrow();
-        codiNomeService.getJusticeLeagueCodiNomesList().remove(codiNome);
-
-        return codiNome;
+        if (codiNameService.getJusticeLeagueCodiNomesList().isEmpty()) {
+            throw new NoCodiNameAvailable("Codiname justice league no available.");
+        }
+        String firstCodiNome = codiNameService.getJusticeLeagueCodiNomesList().stream().findFirst().orElseThrow();
+        codiNameService.getJusticeLeagueCodiNomesList().remove(firstCodiNome);
+        return firstCodiNome;
     }
 }

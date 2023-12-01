@@ -5,25 +5,31 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "jogador")
+@Table(name = "player")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-public class Jogador implements Serializable {
+public class Player implements Serializable {
 
     @Id
     @EqualsAndHashCode.Include
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
-    String nome;
+    String name;
     String email;
-    String telefone;
-    String codiNome;
+    String phone;
+    String codiName;
     @Enumerated(EnumType.STRING)
     GrupType grupType;
+
+    @CreationTimestamp
+            @Column(name = "data_hora_created")
+    LocalDateTime localDateTime;
 }

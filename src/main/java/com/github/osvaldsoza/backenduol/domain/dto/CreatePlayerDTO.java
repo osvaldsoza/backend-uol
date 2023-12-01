@@ -4,7 +4,7 @@ import com.github.osvaldsoza.backenduol.domain.model.GrupType;
 import lombok.Data;
 
 @Data
-public class PlayerDTO {
+public class CreatePlayerDTO {
 
     String name;
     String email;
